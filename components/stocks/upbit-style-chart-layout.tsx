@@ -51,8 +51,8 @@ function useResponsiveChartHeight(compact?: boolean) {
     const updateHeight = () => {
       const width = window.innerWidth;
 
-      if (width < 640) {
-        setHeight(compact ? 320 : 420);
+      if (width <= 768) {
+        setHeight(compact ? 280 : 420);
         return;
       }
 
@@ -102,7 +102,7 @@ export function UpbitStyleChartLayout({
       : "fallback";
 
   return (
-    <section className="premium-card overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <section className="upbitChartLayout premium-card overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div
         className={cn(
           "border-b border-slate-200 px-4 sm:px-5",

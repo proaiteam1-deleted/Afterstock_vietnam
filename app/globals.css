@@ -172,6 +172,11 @@ body {
   line-height: 1.55;
 }
 
+.mobileMarketToggle,
+.mobileOpinionToggle {
+  display: none;
+}
+
 @keyframes fireAuraPulse {
   0% {
     transform: scale(0.96) rotate(-2deg);
@@ -206,5 +211,85 @@ body {
   .profileAvatarWrap.topRankFireAura::before,
   .profileAvatarWrap.topRankFireAura::after {
     animation: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .homePageShell {
+    padding-inline: 12px;
+  }
+
+  .heroFeatureGrid {
+    gap: 12px;
+  }
+
+  .mobileAssetSummary {
+    margin-top: 12px;
+  }
+
+  .communityPanelSlot .premium-card > .p-6 {
+    padding: 16px;
+  }
+
+  .communityPanelSlot .premium-card > .grid > div {
+    padding: 14px;
+  }
+
+  .communityPanelSlot .premium-card .text-4xl {
+    font-size: 30px;
+    line-height: 1.12;
+  }
+
+  .profileOpinionList {
+    max-height: none;
+  }
+
+  .profileOpinionList:not(.isExpanded) .mobileOpinionExtra {
+    display: none;
+  }
+
+  .mobileOpinionToggle,
+  .mobileMarketToggle {
+    display: inline-flex;
+  }
+
+  .profileRankingGrid {
+    display: flex;
+    gap: 14px;
+    margin-inline: -12px;
+    overflow-x: auto;
+    padding-inline: 12px;
+    padding-bottom: 12px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .profileRankingGrid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .profileRankingCard {
+    min-width: 82%;
+    scroll-snap-align: start;
+  }
+
+  .marketSnapshotGrid:not(.isExpanded) {
+    display: none;
+  }
+
+  .marketSnapshotSection {
+    margin-top: 4px;
+  }
+
+  .upbitChartLayout > div:first-child {
+    padding-block: 12px;
+  }
+
+  .upbitChartLayout > div:last-child {
+    padding: 10px;
+  }
+
+  .fallbackChartSvg {
+    min-height: 280px !important;
   }
 }

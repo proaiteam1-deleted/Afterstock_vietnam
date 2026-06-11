@@ -314,7 +314,7 @@ export function FallbackChart({
       style={{ minHeight: height }}
     >
       <svg
-        className="h-full min-h-[360px] w-full"
+        className="fallbackChartSvg h-full min-h-[360px] w-full"
         preserveAspectRatio="none"
         role="img"
         viewBox={`0 0 ${chart.width} ${chart.height}`}
