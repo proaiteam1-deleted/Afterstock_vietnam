@@ -149,7 +149,7 @@ const profileRankingsByAsset: Record<string, ProfileRanking[]> = {
 };
 
 const DEFAULT_HOME_STOCK_SYMBOL = "삼성전자";
-const MOBILE_BLOCK_WIDTH = 768;
+const MOBILE_SUMMARY_WIDTH = 768;
 const SHOW_BACKLOG_SECTIONS = false;
 
 function getProfileAccuracy(profile: ProfileRanking) {
@@ -760,21 +760,434 @@ function MobileSelectedStockSummary({ stock }: { stock: StockAsset }) {
   );
 }
 
-function MobileBlockScreen() {
+function MobileMiniChart({
+  changeRate,
+  currentPrice,
+  stock,
+}: {
+  changeRate: number;
+  currentPrice: string;
+  stock: StockAsset;
+}) {
+  const points = stock.chartPoints.length > 1 ? stock.chartPoints : [48, 50, 49, 52];
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = Math.max(max - min, 1);
+  const width = 320;
+  const height = 176;
+  const padding = 16;
+  const linePoints = points.map((point, index) => {
+    const x = padding + (index / Math.max(points.length - 1, 1)) * (width - padding * 2);
+    const y = padding + ((max - point) / range) * (height - padding * 2);
+
+    return { x, y };
+  });
+  const linePath = linePoints
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+    .join(" ");
+  const firstPoint = linePoints[0];
+  const lastPoint = linePoints[linePoints.length - 1];
+  const areaPath = `${linePath} L ${lastPoint.x.toFixed(2)} ${height - padding} L ${firstPoint.x.toFixed(2)} ${height - padding} Z`;
+  const isPositive = changeRate >= 0;
+
   return (
-    <main className="mobileBlockScreen">
-      <section className="mobileBlockCard" aria-labelledby="mobile-block-title">
-        <div className="mobileBlockLogo">AfterStock</div>
-        <h1 id="mobile-block-title">Vui lòng truy cập bằng PC</h1>
-        <p>
-          AfterStock được tối ưu hóa cho môi trường PC.
-          <br />
-          <br />
-          Trên màn hình hiện tại, biểu đồ và dữ liệu hồ sơ có thể khó hiển thị chính xác.
-          Vui lòng truy cập bằng PC hoặc máy tính bảng ở chế độ ngang để sử dụng tốt hơn.
-        </p>
-        <span>Phiên bản tối ưu cho di động sẽ được cung cấp sau.</span>
-      </section>
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold text-slate-400">Biểu đồ nhanh</p>
+          <h2 className="mt-1 text-base font-black text-slate-950">{stock.displayName}</h2>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-black tabular-nums text-slate-950">{currentPrice}</p>
+          <p
+            className={cn(
+              "mt-1 text-xs font-black tabular-nums",
+              isPositive ? "text-red-500" : "text-blue-500",
+            )}
+          >
+            {isPositive ? "+" : ""}
+            {changeRate.toFixed(2)}%
+          </p>
+        </div>
+      </div>
+      <svg
+        aria-label={`Biểu đồ tóm tắt ${stock.displayName} trên di động`}
+        className="h-[176px] w-full overflow-visible"
+        role="img"
+        viewBox={`0 0 ${width} ${height}`}
+      >
+        <defs>
+          <linearGradient id="mobile-chart-fill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor={isPositive ? "#ef4444" : "#2563eb"} stopOpacity="0.24" />
+            <stop offset="100%" stopColor={isPositive ? "#ef4444" : "#2563eb"} stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        {[0, 1, 2, 3].map((tick) => {
+          const y = padding + tick * ((height - padding * 2) / 3);
+
+          return (
+            <line
+              key={tick}
+              stroke="#e2e8f0"
+              strokeDasharray="4 6"
+              strokeWidth="1"
+              x1={padding}
+              x2={width - padding}
+              y1={y}
+              y2={y}
+            />
+          );
+        })}
+        <path d={areaPath} fill="url(#mobile-chart-fill)" />
+        <path
+          d={linePath}
+          fill="none"
+          stroke={isPositive ? "#ef4444" : "#2563eb"}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="3"
+        />
+      </svg>
+    </section>
+  );
+}
+
+function MobileSummaryPage({
+  assetOptions,
+  onStockSelect,
+  opinions,
+  selectedStock,
+}: {
+  assetOptions: ReturnType<typeof createHomeAssetOptions>;
+  onStockSelect: (stock: StockAsset) => void;
+  opinions: StockOpinion[];
+  selectedStock: StockAsset;
+}) {
+  const quote = useStockQuote(selectedStock);
+  const [storage, setStorage] = useState<MarketPredictionStorage | null>(null);
+  const [aiOpinionStatus, setAiOpinionStatus] = useState<"idle" | "loading" | "ready">(
+    "idle",
+  );
+  const predictionTargetId = getPredictionTargetId(selectedStock);
+  const voteState = getVoteState(storage, selectedStock);
+  const longIsMajority = voteState.upPercent >= voteState.downPercent;
+  const opinionItems = useMemo(
+    () => getProfileOpinionFeedItems(selectedStock, opinions).slice(0, 3),
+    [opinions, selectedStock],
+  );
+  const profileOpinionCount = getProfileOpinionCount(selectedStock);
+  const rankings = getSortedProfileRankings(getProfileRankingsForStock(selectedStock)).slice(
+    0,
+    4,
+  );
+  const topProfile = rankings[0];
+  const otherProfiles = rankings.slice(1);
+  const isPositive = quote.changeRate >= 0;
+
+  useEffect(() => {
+    const timerId = window.setTimeout(() => {
+      setStorage(getOrSeedMarketPredictionStorage() as MarketPredictionStorage);
+    }, 0);
+
+    return () => window.clearTimeout(timerId);
+  }, [predictionTargetId]);
+
+  function handleVote(direction: MarketDirection) {
+    const current = (storage ??
+      getOrSeedMarketPredictionStorage()) as MarketPredictionStorage;
+
+    if (current.votes[predictionTargetId]) {
+      return;
+    }
+
+    const currentCounts: MarketPredictionCounts =
+      current.counts[predictionTargetId] ?? getInitialPredictionCounts(selectedStock);
+    const nextStorage: MarketPredictionStorage = {
+      counts: {
+        ...current.counts,
+        [predictionTargetId]: {
+          ...currentCounts,
+          [direction]: currentCounts[direction] + 1,
+        },
+      },
+      votes: {
+        ...current.votes,
+        [predictionTargetId]: direction,
+      },
+    };
+
+    setMarketPredictionStorage(nextStorage);
+    setStorage(nextStorage);
+  }
+
+  async function handleAskAi() {
+    setAiOpinionStatus("loading");
+
+    window.setTimeout(() => {
+      setAiOpinionStatus("ready");
+    }, 700);
+  }
+
+  return (
+    <main className="min-h-screen bg-slate-50 px-4 pb-6 pt-4">
+      <div className="mx-auto flex max-w-md flex-col gap-3">
+        <header className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl font-black tracking-normal text-slate-950">AfterStock</h1>
+              <p className="mt-1 text-xs font-bold text-slate-500">Tóm tắt di động</p>
+            </div>
+            <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-black text-white">
+              {selectedStock.market}
+            </span>
+          </div>
+          <div className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
+            {assetOptions.map((option) => {
+              const isSelected = option.stock.symbol === selectedStock.symbol;
+
+              return (
+                <button
+                  className={cn(
+                    "shrink-0 rounded-full border px-3 py-2 text-xs font-black transition",
+                    isSelected
+                      ? "border-slate-950 bg-slate-950 text-white"
+                      : "border-slate-200 bg-white text-slate-600",
+                  )}
+                  key={option.stock.symbol}
+                  onClick={() => onStockSelect(option.stock)}
+                  type="button"
+                >
+                  {option.displayName}
+                </button>
+              );
+            })}
+          </div>
+        </header>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-2xl font-black text-slate-950">
+                {selectedStock.displayName}
+              </p>
+              <p className="mt-1 text-xs font-bold text-slate-400">
+                {quote.displayPair} · {selectedStock.market}
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-xl font-black tabular-nums text-slate-950">
+                {quote.currentPrice}
+              </p>
+              <p
+                className={cn(
+                  "mt-1 text-sm font-black tabular-nums",
+                  isPositive ? "text-red-500" : "text-blue-500",
+                )}
+              >
+                {isPositive ? "+" : ""}
+                {quote.changeRate.toFixed(2)}%
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <MobileMiniChart
+          changeRate={quote.changeRate}
+          currentPrice={quote.currentPrice}
+          stock={selectedStock}
+        />
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200">
+            <div className="border-r border-slate-200 bg-blue-50/60 p-3">
+              <p className="text-xs font-bold text-slate-500">Short · Giảm</p>
+              <p className="mt-1 text-2xl font-black text-blue-500">
+                {voteState.downPercent}%
+              </p>
+            </div>
+            <div className="bg-red-50/60 p-3">
+              <p className="text-xs font-bold text-slate-500">Long · Tăng</p>
+              <p className="mt-1 text-2xl font-black text-red-500">
+                {voteState.upPercent}%
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 text-center">
+            <p className="text-xs font-bold text-slate-500">Xu hướng cộng đồng hiện tại</p>
+            <p
+              className={cn(
+                "mt-1 text-3xl font-black tracking-normal",
+                longIsMajority ? "text-red-500" : "text-blue-500",
+              )}
+            >
+              {longIsMajority ? "Long" : "Short"}{" "}
+              {longIsMajority ? voteState.upPercent : voteState.downPercent}%
+            </p>
+            <p className="mt-1 text-xs font-bold text-slate-500">
+              Tổng {voteState.total.toLocaleString("vi-VN")} phiếu · đã thu thập ý kiến về biểu đồ
+            </p>
+          </div>
+
+          <div className="mt-4">
+            <div className="flex h-2 overflow-hidden rounded-full bg-blue-100">
+              <div className="bg-red-500" style={{ width: `${voteState.upPercent}%` }} />
+              <div className="bg-blue-500" style={{ width: `${voteState.downPercent}%` }} />
+            </div>
+            <div className="mt-2 flex justify-between text-xs font-black">
+              <span className="text-red-500">Long {voteState.upPercent}%</span>
+              <span className="text-blue-500">Short {voteState.downPercent}%</span>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Button
+              className="h-11 rounded-xl border-red-100 bg-red-50 text-sm font-black text-red-500 hover:bg-red-100 disabled:bg-red-50 disabled:text-red-300"
+              disabled={Boolean(voteState.myVote)}
+              onClick={() => handleVote("up")}
+              type="button"
+            >
+              <ArrowUp className="h-4 w-4" aria-hidden="true" />
+              Tăng
+            </Button>
+            <Button
+              className="h-11 rounded-xl border-blue-100 bg-blue-50 text-sm font-black text-blue-500 hover:bg-blue-100 disabled:bg-blue-50 disabled:text-blue-300"
+              disabled={Boolean(voteState.myVote)}
+              onClick={() => handleVote("down")}
+              type="button"
+            >
+              <ArrowDown className="h-4 w-4" aria-hidden="true" />
+              Giảm
+            </Button>
+          </div>
+
+          <Button
+            className="mt-3 h-11 w-full justify-center gap-2 rounded-xl bg-slate-950 text-sm font-black text-white hover:bg-slate-800"
+            disabled={aiOpinionStatus === "loading"}
+            onClick={handleAskAi}
+            type="button"
+          >
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            {aiOpinionStatus === "loading" ? "Đang chuẩn bị ý kiến AI" : "Yêu cầu ý kiến AI"}
+          </Button>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-base font-black text-slate-950">Tóm tắt ý kiến hồ sơ</h2>
+              <p className="mt-1 text-xs font-bold text-slate-500">
+                Đã thu thập ý kiến từ {profileOpinionCount} hồ sơ
+              </p>
+            </div>
+            <span className="text-xs font-black text-slate-400">Tối đa 3</span>
+          </div>
+          <div className="mt-3 space-y-2">
+            {opinionItems.length > 0 ? (
+              opinionItems.map((item) => (
+                <article
+                  className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5"
+                  key={item.id}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="truncate text-xs font-black text-slate-800">
+                        {item.nickname}
+                      </span>
+                      <span
+                        className={cn(
+                          "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-black",
+                          item.stance === "bullish" && "bg-red-50 text-red-500",
+                          item.stance === "bearish" && "bg-blue-50 text-blue-500",
+                          item.stance === "neutral" && "bg-slate-100 text-slate-500",
+                        )}
+                      >
+                        {item.stance === "bullish"
+                          ? "Tăng"
+                          : item.stance === "bearish"
+                            ? "Giảm"
+                            : "Quan sát"}
+                      </span>
+                    </div>
+                    <span className="shrink-0 text-[11px] font-bold text-slate-400">
+                      {item.createdAt}
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-600">
+                    {item.body}
+                  </p>
+                </article>
+              ))
+            ) : (
+              <p className="rounded-xl bg-slate-50 px-3 py-4 text-center text-xs font-bold text-slate-500">
+                Chưa có ý kiến để hiển thị.
+              </p>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div>
+            <h2 className="text-base font-black text-slate-950">Tóm tắt độ chính xác hồ sơ</h2>
+            <p className="mt-1 text-xs font-bold text-slate-500">
+              Chỉ xem nhanh các hồ sơ dẫn đầu theo {selectedStock.displayName}.
+            </p>
+          </div>
+          {topProfile ? (
+            <article className="rankingCard topWinner mt-3 rounded-2xl border border-amber-200 bg-white p-4">
+              <div className="flex items-center gap-3">
+                <ProfileRankingAvatar isTopRank profile={topProfile} />
+                <div className="min-w-0 flex-1">
+                  <p className="rankLabel winnerLabel w-fit">🏆 Vua dự đoán hôm nay</p>
+                  <h3 className="mt-1 truncate text-base font-black text-slate-950">
+                    {topProfile.name}
+                  </h3>
+                  <p className="mt-1 text-xs font-bold text-amber-600">
+                    Độ chính xác {getProfileAccuracy(topProfile)}% · đúng liên tiếp{" "}
+                    {topProfile.consecutiveCorrectCount} lần
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-600">
+                {topProfile.latestOpinion}
+              </p>
+            </article>
+          ) : null}
+          <div className="mt-3 space-y-2">
+            {otherProfiles.map((profile, index) => {
+              const accuracy = getProfileAccuracy(profile);
+              const isBullish = profile.latestDirection === "상승";
+
+              return (
+                <article
+                  className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5"
+                  key={profile.id}
+                >
+                  <span className="text-xs font-black text-blue-500">
+                    Hạng {index + 2}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-black text-slate-900">
+                      {profile.name}
+                    </p>
+                    <p className="mt-0.5 text-[11px] font-bold text-slate-500">
+                      {profile.totalPredictions} dự đoán / {profile.correctPredictions} đúng
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "rounded px-2 py-1 text-xs font-black",
+                      isBullish ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-500",
+                    )}
+                  >
+                    {accuracy}%
+                  </span>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
@@ -1201,7 +1614,7 @@ export function StockChartCommunityHome() {
   const [selectedStock, setSelectedStock] = useState<StockAsset>(defaultStock);
   const [opinions, setOpinions] = useState<StockOpinion[]>([]);
   const [marketCloseCountdown, setMarketCloseCountdown] = useState("00:00:00");
-  const [isMobileBlocked, setIsMobileBlocked] = useState(false);
+  const [isMobileSummary, setIsMobileSummary] = useState(false);
   const popularStocks = useMemo(
     () =>
       popularTradingViewSymbols
@@ -1215,7 +1628,7 @@ export function StockChartCommunityHome() {
 
   useEffect(() => {
     const checkWidth = () => {
-      setIsMobileBlocked(window.innerWidth <= MOBILE_BLOCK_WIDTH);
+      setIsMobileSummary(window.innerWidth <= MOBILE_SUMMARY_WIDTH);
     };
 
     checkWidth();
@@ -1278,8 +1691,15 @@ export function StockChartCommunityHome() {
     setStoredHomeStock(stock);
   }
 
-  if (isMobileBlocked) {
-    return <MobileBlockScreen />;
+  if (isMobileSummary) {
+    return (
+      <MobileSummaryPage
+        assetOptions={assetOptions}
+        onStockSelect={handleStockSelect}
+        opinions={opinions}
+        selectedStock={selectedStock}
+      />
+    );
   }
 
   return (
