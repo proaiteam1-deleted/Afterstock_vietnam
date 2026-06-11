@@ -595,6 +595,27 @@ function ChartCommunityPanel({
           </div>
         </div>
 
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <Button
+            className="h-10 rounded-lg border-red-100 bg-red-50 text-sm font-bold text-red-500 hover:bg-red-100 disabled:bg-red-50 disabled:text-red-300"
+            disabled={Boolean(voteState.myVote)}
+            onClick={() => handleVote("up")}
+            type="button"
+          >
+            <ArrowUp className="h-4 w-4" aria-hidden="true" />
+            Tăng
+          </Button>
+          <Button
+            className="h-10 rounded-lg border-blue-100 bg-blue-50 text-sm font-bold text-blue-500 hover:bg-blue-100 disabled:bg-blue-50 disabled:text-blue-300"
+            disabled={Boolean(voteState.myVote)}
+            onClick={() => handleVote("down")}
+            type="button"
+          >
+            <ArrowDown className="h-4 w-4" aria-hidden="true" />
+            Giảm
+          </Button>
+        </div>
+
         <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3">
           <Button
             className="h-10 w-full justify-center gap-2 rounded-lg bg-slate-950 text-sm font-bold text-white hover:bg-slate-800"
@@ -681,27 +702,6 @@ function ChartCommunityPanel({
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button
-            className="h-10 rounded-lg border-red-100 bg-red-50 text-sm font-bold text-red-500 hover:bg-red-100 disabled:bg-red-50 disabled:text-red-300"
-            disabled={Boolean(voteState.myVote)}
-            onClick={() => handleVote("up")}
-            type="button"
-          >
-            <ArrowUp className="h-4 w-4" aria-hidden="true" />
-            Tăng
-          </Button>
-          <Button
-            className="h-10 rounded-lg border-blue-100 bg-blue-50 text-sm font-bold text-blue-500 hover:bg-blue-100 disabled:bg-blue-50 disabled:text-blue-300"
-            disabled={Boolean(voteState.myVote)}
-            onClick={() => handleVote("down")}
-            type="button"
-          >
-            <ArrowDown className="h-4 w-4" aria-hidden="true" />
-            Giảm
-          </Button>
         </div>
       </div>
     </aside>
