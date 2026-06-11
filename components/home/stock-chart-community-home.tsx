@@ -149,6 +149,7 @@ const profileRankingsByAsset: Record<string, ProfileRanking[]> = {
 };
 
 const DEFAULT_HOME_STOCK_SYMBOL = "삼성전자";
+const MOBILE_BLOCK_WIDTH = 768;
 const SHOW_BACKLOG_SECTIONS = false;
 
 function getProfileAccuracy(profile: ProfileRanking) {
@@ -759,6 +760,25 @@ function MobileSelectedStockSummary({ stock }: { stock: StockAsset }) {
   );
 }
 
+function MobileBlockScreen() {
+  return (
+    <main className="mobileBlockScreen">
+      <section className="mobileBlockCard" aria-labelledby="mobile-block-title">
+        <div className="mobileBlockLogo">AfterStock</div>
+        <h1 id="mobile-block-title">Vui lòng truy cập bằng PC</h1>
+        <p>
+          AfterStock được tối ưu hóa cho môi trường PC.
+          <br />
+          <br />
+          Trên màn hình hiện tại, biểu đồ và dữ liệu hồ sơ có thể khó hiển thị chính xác.
+          Vui lòng truy cập bằng PC hoặc máy tính bảng ở chế độ ngang để sử dụng tốt hơn.
+        </p>
+        <span>Phiên bản tối ưu cho di động sẽ được cung cấp sau.</span>
+      </section>
+    </main>
+  );
+}
+
 function getStoredHomeStock(options: ReturnType<typeof createHomeAssetOptions>) {
   if (typeof window === "undefined") {
     return null;
@@ -1181,6 +1201,7 @@ export function StockChartCommunityHome() {
   const [selectedStock, setSelectedStock] = useState<StockAsset>(defaultStock);
   const [opinions, setOpinions] = useState<StockOpinion[]>([]);
   const [marketCloseCountdown, setMarketCloseCountdown] = useState("00:00:00");
+  const [isMobileBlocked, setIsMobileBlocked] = useState(false);
   const popularStocks = useMemo(
     () =>
       popularTradingViewSymbols
@@ -1191,6 +1212,17 @@ export function StockChartCommunityHome() {
         .slice(0, 6),
     [],
   );
+
+  useEffect(() => {
+    const checkWidth = () => {
+      setIsMobileBlocked(window.innerWidth <= MOBILE_BLOCK_WIDTH);
+    };
+
+    checkWidth();
+    window.addEventListener("resize", checkWidth);
+
+    return () => window.removeEventListener("resize", checkWidth);
+  }, []);
 
   useEffect(() => {
     const timerId = window.setTimeout(() => {
@@ -1244,6 +1276,10 @@ export function StockChartCommunityHome() {
   function handleStockSelect(stock: StockAsset) {
     setSelectedStock(stock);
     setStoredHomeStock(stock);
+  }
+
+  if (isMobileBlocked) {
+    return <MobileBlockScreen />;
   }
 
   return (
