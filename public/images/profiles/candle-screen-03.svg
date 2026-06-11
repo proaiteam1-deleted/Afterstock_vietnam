@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Candlestick chart profile">
+  <defs>
+    <radialGradient id="light" cx="50%" cy="20%" r="75%">
+      <stop stop-color="#fff7ed"/>
+      <stop offset=".35" stop-color="#fed7aa"/>
+      <stop offset="1" stop-color="#111827"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="23" y1="22" x2="95" y2="91" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="30" fill="url(#light)"/>
+  <rect x="18" y="22" width="84" height="74" rx="18" fill="url(#glass)" opacity=".96"/>
+  <path d="M32 78h55" stroke="#64748b" stroke-width="2" opacity=".4"/>
+  <path d="M32 58h55" stroke="#64748b" stroke-width="2" opacity=".32"/>
+  <path d="M32 38h55" stroke="#64748b" stroke-width="2" opacity=".22"/>
+  <g stroke-linecap="round">
+    <path d="M40 39v38" stroke="#60a5fa" stroke-width="3"/>
+    <rect x="35" y="51" width="10" height="17" rx="2" fill="#2563eb"/>
+    <path d="M55 31v47" stroke="#fca5a5" stroke-width="3"/>
+    <rect x="50" y="37" width="10" height="25" rx="2" fill="#ef4444"/>
+    <path d="M70 45v36" stroke="#60a5fa" stroke-width="3"/>
+    <rect x="65" y="55" width="10" height="18" rx="2" fill="#2563eb"/>
+    <path d="M85 29v48" stroke="#fca5a5" stroke-width="3"/>
+    <rect x="80" y="43" width="10" height="26" rx="2" fill="#ef4444"/>
+  </g>
+  <circle cx="30" cy="27" r="8" fill="#f97316" opacity=".75"/>
+  <circle cx="95" cy="92" r="15" fill="#2563eb" opacity=".15"/>
+</svg>

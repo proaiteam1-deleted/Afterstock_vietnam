@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Trading desk profile">
+  <defs>
+    <linearGradient id="bg" x1="16" y1="10" x2="104" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#172033"/>
+      <stop offset=".52" stop-color="#294567"/>
+      <stop offset="1" stop-color="#121826"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="24" y1="31" x2="95" y2="83" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#dceafe"/>
+      <stop offset="1" stop-color="#8eb6ee"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+  </defs>
+  <rect width="120" height="120" rx="26" fill="url(#bg)"/>
+  <circle cx="91" cy="26" r="22" fill="#60a5fa" opacity=".18" filter="url(#soft)"/>
+  <rect x="19" y="31" width="82" height="50" rx="8" fill="#0b1020"/>
+  <rect x="25" y="37" width="70" height="36" rx="5" fill="url(#screen)"/>
+  <path d="M31 62h9l6-11 7 15 8-20 8 12h15" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M31 53h12l5 8 10-16 8 9h18" fill="none" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
+  <rect x="35" y="87" width="50" height="9" rx="4" fill="#1f2937"/>
+  <rect x="50" y="79" width="20" height="9" rx="3" fill="#111827"/>
+  <rect x="21" y="99" width="78" height="7" rx="3.5" fill="#0f172a" opacity=".72"/>
+</svg>
