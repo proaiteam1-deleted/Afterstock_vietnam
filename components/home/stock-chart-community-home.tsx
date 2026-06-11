@@ -1008,18 +1008,28 @@ function ProfileRankingSection({ selectedStock }: { selectedStock: StockAsset })
           const title = getProfileTitle(accuracy);
           const isBullish = profile.latestDirection === "상승";
           const displayRank = index + 1;
+          const isTopWinner = index === 0;
+          const rankLabel = isTopWinner ? "🏆 Vua dự đoán hôm nay" : `Hạng ${displayRank}`;
 
           return (
             <article
-              className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+              className={cn(
+                "rankingCard overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm",
+                isTopWinner && "topWinner",
+              )}
               key={profile.id}
             >
               <div className="border-b border-slate-100 p-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <ProfileRankingAvatar isTopRank={index === 0} profile={profile} />
+                  <ProfileRankingAvatar isTopRank={isTopWinner} profile={profile} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-black text-blue-500">
-                      #{displayRank} hồ sơ
+                    <p
+                      className={cn(
+                        "rankLabel w-fit",
+                        isTopWinner ? "winnerLabel" : "normalRank",
+                      )}
+                    >
+                      {rankLabel}
                     </p>
                     <h3 className="mt-1 truncate text-base font-black text-slate-950">
                       {profile.name}
