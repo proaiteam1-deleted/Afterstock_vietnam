@@ -1754,12 +1754,14 @@ function ProfileRankingSection({ selectedStock }: { selectedStock: StockAsset })
         </p>
       </div>
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        alt="Banner phần thưởng vua dự đoán 1 chỉ vàng"
-        className="rewardImageBanner"
-        src={REWARD_BANNER_IMAGE}
-      />
+      <div className="rewardBannerWrapper">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          alt="Banner phần thưởng vua dự đoán 1 chỉ vàng"
+          className="rewardImageBanner"
+          src={REWARD_BANNER_IMAGE}
+        />
+      </div>
 
       <div className="profileRankingGrid grid gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(300px,1fr)]">
         <div className="grid gap-3 md:grid-cols-3">
