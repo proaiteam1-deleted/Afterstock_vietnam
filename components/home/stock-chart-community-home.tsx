@@ -148,6 +148,75 @@ const profileRankingsByAsset: Record<string, ProfileRanking[]> = {
   ],
 };
 
+const supplementalProfileRankings: Omit<ProfileRanking, "id" | "rank">[] = [
+  {
+    name: "ReboundCheck",
+    profileImage: profileImages.personBlue,
+    totalPredictions: 54,
+    correctPredictions: 34,
+    accuracy: 63,
+    title: "Người quan sát thị trường",
+    latestDirection: "상승",
+    latestOpinion: "Mình vẫn để mở khả năng hồi ngắn hạn.",
+    consecutiveCorrectCount: 2,
+  },
+  {
+    name: "CloseHunter",
+    profileImage: profileImages.cafe,
+    totalPredictions: 47,
+    correctPredictions: 29,
+    accuracy: 62,
+    title: "Người quan sát thị trường",
+    latestDirection: "상승",
+    latestOpinion: "Xét theo giá đóng cửa, dòng chảy vẫn chưa quá xấu.",
+    consecutiveCorrectCount: 3,
+  },
+  {
+    name: "ScalpObserver",
+    profileImage: profileImages.sports,
+    totalPredictions: 42,
+    correctPredictions: 25,
+    accuracy: 60,
+    title: "Người quan sát thị trường",
+    latestDirection: "하락",
+    latestOpinion: "Vùng ngắn hạn hơi nóng nên mình chờ thêm một nhịp.",
+    consecutiveCorrectCount: 1,
+  },
+  {
+    name: "PullbackWatch",
+    profileImage: profileImages.travel,
+    totalPredictions: 38,
+    correctPredictions: 22,
+    accuracy: 58,
+    title: "Người quan sát thị trường",
+    latestDirection: "상승",
+    latestOpinion: "Mình theo dõi xem sau nhịp nghỉ có khối lượng quay lại không.",
+    consecutiveCorrectCount: 2,
+  },
+  {
+    name: "OrderBookMan",
+    profileImage: profileImages.dog,
+    totalPredictions: 31,
+    correctPredictions: 17,
+    accuracy: 55,
+    title: "Người quan sát thị trường",
+    latestDirection: "하락",
+    latestOpinion: "Sổ lệnh còn mỏng nên ưu tiên nhìn biến động trước.",
+    consecutiveCorrectCount: 1,
+  },
+  {
+    name: "VolumeMemo",
+    profileImage: profileImages.food,
+    totalPredictions: 28,
+    correctPredictions: 15,
+    accuracy: 54,
+    title: "Đang luyện tập",
+    latestDirection: "상승",
+    latestOpinion: "Mình ghi lại liệu khối lượng có hồi phục hay không.",
+    consecutiveCorrectCount: 1,
+  },
+];
+
 const DEFAULT_HOME_STOCK_SYMBOL = "삼성전자";
 const MOBILE_SUMMARY_WIDTH = 768;
 const SHOW_BACKLOG_SECTIONS = false;
@@ -186,12 +255,19 @@ function getSortedProfileRankings(rankings: ProfileRanking[]) {
 }
 
 function getProfileRankingsForStock(stock: StockAsset) {
-  return (
+  const baseRankings =
     profileRankingsByAsset[stock.symbol] ??
     profileRankingsByAsset[stock.displayName] ??
     profileRankingsByAsset[DEFAULT_HOME_STOCK_SYMBOL] ??
-    []
-  );
+    [];
+  const supplementalRankings = supplementalProfileRankings.map((profile, index) => ({
+    ...profile,
+    id: `${stock.symbol}-supplemental-${index + 1}`,
+    latestOpinion: `${stock.displayName}: ${profile.latestOpinion}`,
+    rank: baseRankings.length + index + 1,
+  }));
+
+  return [...baseRankings, ...supplementalRankings];
 }
 
 function getPredictionTargetId(stock: StockAsset) {
@@ -1480,8 +1556,186 @@ function ProfileRankingAvatar({
   );
 }
 
+function ProfileRankingMiniAvatar({ profile }: { profile: ProfileRanking }) {
+  const initial = profile.name.slice(0, 1);
+
+  return (
+    <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-900 text-xs font-black text-white">
+      {profile.profileImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt={`${profile.name} hồ sơ`}
+          className="relative z-10 h-full w-full rounded-full object-cover"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+          src={profile.profileImage}
+        />
+      ) : null}
+      <span className="absolute inset-0 flex items-center justify-center">{initial}</span>
+    </div>
+  );
+}
+
+function ProfileRankingCard({
+  displayRank,
+  isTopWinner,
+  profile,
+}: {
+  displayRank: number;
+  isTopWinner: boolean;
+  profile: ProfileRanking;
+}) {
+  const accuracy = getProfileAccuracy(profile);
+  const title = getProfileTitle(accuracy);
+  const isBullish = profile.latestDirection === "상승";
+  const rankLabel = isTopWinner ? "🏆 Vua dự đoán hôm nay" : `Hạng ${displayRank}`;
+
+  return (
+    <article
+      className={cn(
+        "profileRankingCard rankingCard overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm",
+        isTopWinner && "topWinner",
+      )}
+    >
+      <div className="border-b border-slate-100 p-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <ProfileRankingAvatar isTopRank={isTopWinner} profile={profile} />
+          <div className="min-w-0 flex-1">
+            <p
+              className={cn(
+                "rankLabel w-fit",
+                isTopWinner ? "winnerLabel" : "normalRank",
+              )}
+            >
+              {rankLabel}
+            </p>
+            <h3 className="mt-1 truncate text-base font-black text-slate-950">
+              {profile.name}
+            </h3>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              <span
+                className={cn(
+                  "inline-flex max-w-full rounded-full px-2.5 py-1 text-xs font-black",
+                  accuracy >= 80
+                    ? "bg-amber-50 text-amber-600"
+                    : "bg-slate-100 text-slate-600",
+                )}
+              >
+                {title}
+              </span>
+              {isProfileHotStreak(profile) ? (
+                <span className="inline-flex max-w-full rounded-full bg-red-50 px-2.5 py-1 text-xs font-black text-red-500">
+                  Đúng liên tiếp {profile.consecutiveCorrectCount} lần
+                </span>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold text-slate-400">Độ chính xác</p>
+            <p className="mt-1 text-3xl font-black tabular-nums text-slate-950">
+              {accuracy}%
+            </p>
+          </div>
+          <p className="text-right text-xs font-bold leading-5 text-slate-500">
+            {profile.totalPredictions} dự đoán
+            <br />
+            {profile.correctPredictions} đúng
+          </p>
+        </div>
+
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+          <div
+            className={cn(
+              "h-full rounded-full",
+              accuracy >= 80 ? "bg-amber-400" : "bg-slate-400",
+            )}
+            style={{ width: `${accuracy}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-bold text-slate-400">Xu hướng gần nhất</span>
+          <span
+            className={cn(
+              "rounded px-2 py-1 text-xs font-black",
+              isBullish ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-500",
+            )}
+          >
+            {isBullish ? "Tăng" : "Giảm"}
+          </span>
+        </div>
+        <p className="mt-3 line-clamp-2 text-sm font-medium leading-6 text-slate-600">
+          {profile.latestOpinion}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+function ProfileRankingSideList({
+  profiles,
+  startRank,
+}: {
+  profiles: ProfileRanking[];
+  startRank: number;
+}) {
+  return (
+    <aside className="rankingSideList rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-black text-slate-950">Xếp hạng từ hạng 4</h3>
+        <span className="text-xs font-bold text-slate-400">Theo độ chính xác</span>
+      </div>
+      <div className="max-h-[336px] space-y-1 overflow-y-auto pr-1">
+        {profiles.map((profile, index) => {
+          const accuracy = getProfileAccuracy(profile);
+          const title = getProfileTitle(accuracy);
+          const isBullish = profile.latestDirection === "상승";
+          const displayRank = startRank + index;
+
+          return (
+            <article
+              className="grid grid-cols-[48px_32px_minmax(0,1fr)_auto] items-center gap-2 border-b border-slate-100 py-2.5 last:border-b-0"
+              key={profile.id}
+            >
+              <span className="text-xs font-black text-blue-500">Hạng {displayRank}</span>
+              <ProfileRankingMiniAvatar profile={profile} />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-black text-slate-900">{profile.name}</p>
+                <p className="mt-0.5 truncate text-[11px] font-bold text-slate-500">
+                  {title}
+                </p>
+              </div>
+              <div className="flex min-w-[58px] flex-col items-end gap-1">
+                <span className="text-base font-black tabular-nums text-slate-950">
+                  {accuracy}%
+                </span>
+                <span
+                  className={cn(
+                    "rounded px-1.5 py-0.5 text-[10px] font-black",
+                    isBullish ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-500",
+                  )}
+                >
+                  {isBullish ? "Tăng" : "Giảm"}
+                </span>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
+
 function ProfileRankingSection({ selectedStock }: { selectedStock: StockAsset }) {
   const rankings = getSortedProfileRankings(getProfileRankingsForStock(selectedStock));
+  const topThreeRankings = rankings.slice(0, 3);
+  const sideRankings = rankings.slice(3);
 
   return (
     <section className="space-y-3">
@@ -1500,106 +1754,35 @@ function ProfileRankingSection({ selectedStock }: { selectedStock: StockAsset })
       </div>
 
       <div className="rewardBanner">
-        <strong>🏆 Hồ sơ đối tác hạng 1 dự kiến nhận hỗ trợ hoạt động: 1 chỉ vàng</strong>
-        <small>※ Thuế, phí và các điều kiện chi tiết sẽ tuân theo chính sách vận hành nội bộ.</small>
+        <div className="rewardBannerText">
+          <span className="rewardBannerTitle">
+            🏆 Phần thưởng vua dự đoán: 1 chỉ vàng
+          </span>
+          <small className="rewardBannerSub">
+            Hồ sơ hạng 1 · Thuế, phí theo chính sách nội bộ
+          </small>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          alt="Phần thưởng 1 chỉ vàng"
+          className="rewardGoldImage"
+          src="/images/rewards/gold-bar-reward.png"
+        />
       </div>
 
-      <div className="profileRankingGrid grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {rankings.map((profile, index) => {
-          const accuracy = getProfileAccuracy(profile);
-          const title = getProfileTitle(accuracy);
-          const isBullish = profile.latestDirection === "상승";
-          const displayRank = index + 1;
-          const isTopWinner = index === 0;
-          const rankLabel = isTopWinner ? "🏆 Vua dự đoán hôm nay" : `Hạng ${displayRank}`;
-
-          return (
-            <article
-              className={cn(
-                "profileRankingCard rankingCard overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm",
-                isTopWinner && "topWinner",
-              )}
+      <div className="profileRankingGrid grid gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(300px,1fr)]">
+        <div className="grid gap-3 md:grid-cols-3">
+          {topThreeRankings.map((profile, index) => (
+            <ProfileRankingCard
+              displayRank={index + 1}
+              isTopWinner={index === 0}
               key={profile.id}
-            >
-              <div className="border-b border-slate-100 p-4">
-                <div className="flex min-w-0 items-center gap-3">
-                  <ProfileRankingAvatar isTopRank={isTopWinner} profile={profile} />
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={cn(
-                        "rankLabel w-fit",
-                        isTopWinner ? "winnerLabel" : "normalRank",
-                      )}
-                    >
-                      {rankLabel}
-                    </p>
-                    <h3 className="mt-1 truncate text-base font-black text-slate-950">
-                      {profile.name}
-                    </h3>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      <span
-                        className={cn(
-                          "inline-flex max-w-full rounded-full px-2.5 py-1 text-xs font-black",
-                          accuracy >= 80
-                            ? "bg-amber-50 text-amber-600"
-                            : "bg-slate-100 text-slate-600",
-                        )}
-                      >
-                        {title}
-                      </span>
-                      {isProfileHotStreak(profile) ? (
-                        <span className="inline-flex max-w-full rounded-full bg-red-50 px-2.5 py-1 text-xs font-black text-red-500">
-                          Đúng liên tiếp {profile.consecutiveCorrectCount} lần
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
+              profile={profile}
+            />
+          ))}
+        </div>
 
-                <div className="mt-4 flex items-end justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-400">Độ chính xác</p>
-                    <p className="mt-1 text-3xl font-black tabular-nums text-slate-950">
-                      {accuracy}%
-                    </p>
-                  </div>
-                  <p className="text-right text-xs font-bold leading-5 text-slate-500">
-                    {profile.totalPredictions} dự đoán
-                    <br />
-                    {profile.correctPredictions} đúng
-                  </p>
-                </div>
-
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={cn(
-                      "h-full rounded-full",
-                      accuracy >= 80 ? "bg-amber-400" : "bg-slate-400",
-                    )}
-                    style={{ width: `${accuracy}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-slate-400">Xu hướng gần nhất</span>
-                  <span
-                    className={cn(
-                      "rounded px-2 py-1 text-xs font-black",
-                      isBullish ? "bg-red-50 text-red-500" : "bg-blue-50 text-blue-500",
-                    )}
-                  >
-                    {isBullish ? "Tăng" : "Giảm"}
-                  </span>
-                </div>
-                <p className="mt-3 line-clamp-2 text-sm font-medium leading-6 text-slate-600">
-                  {profile.latestOpinion}
-                </p>
-              </div>
-            </article>
-          );
-        })}
+        <ProfileRankingSideList profiles={sideRankings} startRank={4} />
       </div>
     </section>
   );
