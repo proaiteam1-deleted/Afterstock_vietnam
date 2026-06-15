@@ -227,6 +227,7 @@ const supplementalProfileRankings: Omit<ProfileRanking, "id" | "rank">[] = [
 
 const DEFAULT_HOME_STOCK_SYMBOL = "삼성전자";
 const MOBILE_SUMMARY_WIDTH = 768;
+const REWARD_GOLD_IMAGE = "/images/rewards/gold-bar-reward.png";
 const SHOW_BACKLOG_SECTIONS = false;
 
 function getProfileAccuracy(profile: ProfileRanking) {
@@ -1775,10 +1776,9 @@ function ProfileRankingSection({ selectedStock }: { selectedStock: StockAsset })
           <p className="rewardBannerTitle">1 chỉ vàng</p>
           <p className="rewardBannerSub">Dành cho hồ sơ hạng 1</p>
         </div>
-        <div className="rewardGoldStack" aria-label="Các thỏi vàng xếp chồng">
-          <span className="goldBar goldBarBack" aria-hidden="true" />
-          <span className="goldBar goldBarMiddle" aria-hidden="true" />
-          <span className="goldBar goldBarFront" aria-hidden="true" />
+        <div className="rewardBannerGold">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img alt="Phần thưởng 1 chỉ vàng" src={REWARD_GOLD_IMAGE} />
         </div>
         <div className="rewardBannerAccent">
           <span>Vua dự đoán hôm nay</span>
