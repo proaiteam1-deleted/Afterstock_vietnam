@@ -227,7 +227,7 @@ const supplementalProfileRankings: Omit<ProfileRanking, "id" | "rank">[] = [
 
 const DEFAULT_HOME_STOCK_SYMBOL = "삼성전자";
 const MOBILE_SUMMARY_WIDTH = 768;
-const REWARD_BANNER_IMAGE = "/images/rewards/reward-banner-vi.png";
+const REWARD_GOLD_IMAGE = "/images/rewards/gold-bar-reward.png";
 const SHOW_BACKLOG_SECTIONS = false;
 
 function getProfileAccuracy(profile: ProfileRanking) {
@@ -1771,12 +1771,19 @@ function ProfileRankingSection({ selectedStock }: { selectedStock: StockAsset })
       </div>
 
       <div className="rewardBannerWrapper">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          alt="Banner phần thưởng vua dự đoán 1 chỉ vàng"
-          className="rewardImageBanner"
-          src={REWARD_BANNER_IMAGE}
-        />
+        <div className="rewardBannerCopy">
+          <p className="rewardBannerEyebrow">🏆 Phần thưởng vua dự đoán</p>
+          <p className="rewardBannerTitle">1 chỉ vàng</p>
+          <p className="rewardBannerSub">Dành cho hồ sơ hạng 1</p>
+        </div>
+        <div className="rewardBannerGold">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img alt="Phần thưởng 1 chỉ vàng" src={REWARD_GOLD_IMAGE} />
+        </div>
+        <div className="rewardBannerAccent">
+          <span>Vua dự đoán hôm nay</span>
+          <small>Thuế, phí theo chính sách nội bộ</small>
+        </div>
       </div>
 
       <div className="profileRankingGrid grid gap-3 xl:grid-cols-[minmax(0,3fr)_minmax(300px,1fr)]">

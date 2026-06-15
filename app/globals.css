@@ -146,28 +146,116 @@ body {
 }
 
 .rewardBannerWrapper {
-  display: flex;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) minmax(170px, 240px) minmax(180px, 0.9fr);
+  gap: 18px;
   width: 100%;
+  min-height: 132px;
   align-items: center;
   justify-content: flex-start;
   margin-top: 10px;
   margin-bottom: 16px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  overflow: hidden;
+  padding: 16px 22px;
+  border: 1px solid rgba(245, 158, 11, 0.36);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 53% 42%, rgba(245, 158, 11, 0.34), transparent 27%),
+    radial-gradient(circle at 88% 18%, rgba(250, 204, 21, 0.18), transparent 28%),
+    linear-gradient(135deg, #080b12 0%, #111827 48%, #2b2104 100%);
+  box-shadow:
+    0 12px 26px rgba(15, 23, 42, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.rewardImageBanner {
+.rewardBannerWrapper::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(110deg, transparent 0 32%, rgba(250, 204, 21, 0.12) 33%, transparent 48%),
+    repeating-linear-gradient(120deg, transparent 0 13px, rgba(250, 204, 21, 0.045) 14px 15px);
+  content: "";
+}
+
+.rewardBannerCopy {
+  min-width: 0;
+}
+
+.rewardBannerEyebrow {
+  color: #facc15;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.rewardBannerTitle {
+  margin-top: 5px;
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 950;
+  letter-spacing: 0;
+  line-height: 1.05;
+  text-shadow: 0 2px 18px rgba(250, 204, 21, 0.26);
+}
+
+.rewardBannerSub {
+  display: inline-flex;
+  margin-top: 9px;
+  padding: 5px 10px;
+  border: 1px solid rgba(250, 204, 21, 0.36);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.48);
+  color: #fde68a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.rewardBannerGold {
+  display: flex;
+  height: 100px;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.rewardBannerGold img {
   display: block;
-  width: 100%;
-  max-width: 620px;
-  height: 140px;
-  max-height: 140px;
+  width: min(220px, 100%);
+  height: 100%;
   border-radius: 16px;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.14);
+  filter: drop-shadow(0 12px 22px rgba(245, 158, 11, 0.28));
+}
+
+.rewardBannerAccent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.rewardBannerAccent span {
+  display: inline-flex;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b, #facc15);
+  color: #3f2f00;
+  font-size: 14px;
+  font-weight: 950;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.26);
+}
+
+.rewardBannerAccent small {
+  max-width: 230px;
+  color: #fef3c7;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .mobileMarketToggle,
@@ -345,18 +433,54 @@ body {
   }
 
   .rewardBannerWrapper {
+    grid-template-columns: 1fr 116px;
+    gap: 10px;
+    min-height: 112px;
     margin-top: 10px;
     margin-bottom: 14px;
-    padding: 0;
+    padding: 14px;
+    border-radius: 16px;
   }
 
-  .rewardImageBanner {
-    max-width: 100%;
-    height: 96px;
-    max-height: 96px;
+  .rewardBannerEyebrow {
+    font-size: 12px;
+  }
+
+  .rewardBannerTitle {
+    font-size: 22px;
+  }
+
+  .rewardBannerSub {
+    margin-top: 7px;
+    font-size: 11px;
+  }
+
+  .rewardBannerGold {
+    height: 78px;
+  }
+
+  .rewardBannerGold img {
+    width: 116px;
     border-radius: 12px;
-    object-fit: cover;
-    object-position: center;
+  }
+
+  .rewardBannerAccent {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .rewardBannerAccent span {
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+
+  .rewardBannerAccent small {
+    max-width: none;
+    text-align: right;
+    font-size: 10px;
   }
 
   .marketSnapshotGrid:not(.isExpanded) {
