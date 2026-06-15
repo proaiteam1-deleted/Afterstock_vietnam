@@ -21,10 +21,7 @@ import type {
   MarketDirection,
   MarketPredictionCounts,
 } from "@/lib/mock/market-community";
-import {
-  getOrSeedMarketPredictionStorage,
-  setMarketPredictionStorage,
-} from "@/lib/storage";
+import { getOrSeedMarketPredictionStorage } from "@/lib/storage";
 import { getStockHref, stockAssets } from "@/lib/stocks/mockStocks";
 import { getOrSeedStockOpinionsBySymbol } from "@/lib/stocks/stockStorage";
 import { cn } from "@/lib/utils/cn";
@@ -74,6 +71,17 @@ type ProfileRanking = {
   latestDirection: "상승" | "하락";
   latestOpinion: string;
   consecutiveCorrectCount: number;
+};
+
+type DirectionReaction = {
+  direction: MarketDirection;
+  id: number;
+  message: string;
+};
+
+const DIRECTION_REACTION_MESSAGES: Record<MarketDirection, string> = {
+  down: "📉 Giảm mạnh nào!",
+  up: "🚀 Tăng mạnh nào!",
 };
 
 const HOT_STREAK_THRESHOLD = 5;
@@ -547,6 +555,34 @@ function PixelAvatar({
   );
 }
 
+function createDirectionReaction(direction: MarketDirection): DirectionReaction {
+  return {
+    direction,
+    id: Date.now() + Math.random(),
+    message: DIRECTION_REACTION_MESSAGES[direction],
+  };
+}
+
+function DirectionReactionToast({ reaction }: { reaction: DirectionReaction | null }) {
+  if (!reaction) {
+    return null;
+  }
+
+  return (
+    <div
+      aria-live="polite"
+      className={cn(
+        "directionReactionToast",
+        reaction.direction === "up" ? "isUp" : "isDown",
+      )}
+      key={reaction.id}
+      role="status"
+    >
+      {reaction.message}
+    </div>
+  );
+}
+
 function ChartCommunityPanel({
   opinions,
   stock,
@@ -559,6 +595,9 @@ function ChartCommunityPanel({
     "idle" | "loading" | "ready"
   >("idle");
   const [mobileOpinionsExpanded, setMobileOpinionsExpanded] = useState(false);
+  const [directionReaction, setDirectionReaction] = useState<DirectionReaction | null>(
+    null,
+  );
   const opinionItems = useMemo(
     () => getProfileOpinionFeedItems(stock, opinions),
     [opinions, stock],
@@ -577,32 +616,20 @@ function ChartCommunityPanel({
     return () => window.clearTimeout(timerId);
   }, [predictionTargetId]);
 
-  function handleVote(direction: MarketDirection) {
-    const current = (storage ??
-      getOrSeedMarketPredictionStorage()) as MarketPredictionStorage;
-
-    if (current.votes[predictionTargetId]) {
+  useEffect(() => {
+    if (!directionReaction) {
       return;
     }
 
-    const currentCounts: MarketPredictionCounts =
-      current.counts[predictionTargetId] ?? getInitialPredictionCounts(stock);
-    const nextStorage: MarketPredictionStorage = {
-      counts: {
-        ...current.counts,
-        [predictionTargetId]: {
-          ...currentCounts,
-          [direction]: currentCounts[direction] + 1,
-        },
-      },
-      votes: {
-        ...current.votes,
-        [predictionTargetId]: direction,
-      },
-    };
+    const timerId = window.setTimeout(() => {
+      setDirectionReaction(null);
+    }, 1100);
 
-    setMarketPredictionStorage(nextStorage);
-    setStorage(nextStorage);
+    return () => window.clearTimeout(timerId);
+  }, [directionReaction]);
+
+  function handleVote(direction: MarketDirection) {
+    setDirectionReaction(createDirectionReaction(direction));
   }
 
   async function handleAskAi() {
@@ -615,6 +642,7 @@ function ChartCommunityPanel({
 
   return (
     <aside className="premium-card overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <DirectionReactionToast reaction={directionReaction} />
       <div className="grid grid-cols-2 border-b border-slate-200">
         <div className="flex items-center gap-3 border-r border-slate-200 p-5">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-500">
@@ -677,7 +705,6 @@ function ChartCommunityPanel({
         <div className="mt-5 grid grid-cols-2 gap-2">
           <Button
             className="h-10 rounded-lg border-red-100 bg-red-50 text-sm font-bold text-red-500 hover:bg-red-100 disabled:bg-red-50 disabled:text-red-300"
-            disabled={Boolean(voteState.myVote)}
             onClick={() => handleVote("up")}
             type="button"
           >
@@ -686,7 +713,6 @@ function ChartCommunityPanel({
           </Button>
           <Button
             className="h-10 rounded-lg border-blue-100 bg-blue-50 text-sm font-bold text-blue-500 hover:bg-blue-100 disabled:bg-blue-50 disabled:text-blue-300"
-            disabled={Boolean(voteState.myVote)}
             onClick={() => handleVote("down")}
             type="button"
           >
@@ -945,6 +971,9 @@ function MobileSummaryPage({
   const [aiOpinionStatus, setAiOpinionStatus] = useState<"idle" | "loading" | "ready">(
     "idle",
   );
+  const [directionReaction, setDirectionReaction] = useState<DirectionReaction | null>(
+    null,
+  );
   const predictionTargetId = getPredictionTargetId(selectedStock);
   const voteState = getVoteState(storage, selectedStock);
   const longIsMajority = voteState.upPercent >= voteState.downPercent;
@@ -969,32 +998,20 @@ function MobileSummaryPage({
     return () => window.clearTimeout(timerId);
   }, [predictionTargetId]);
 
-  function handleVote(direction: MarketDirection) {
-    const current = (storage ??
-      getOrSeedMarketPredictionStorage()) as MarketPredictionStorage;
-
-    if (current.votes[predictionTargetId]) {
+  useEffect(() => {
+    if (!directionReaction) {
       return;
     }
 
-    const currentCounts: MarketPredictionCounts =
-      current.counts[predictionTargetId] ?? getInitialPredictionCounts(selectedStock);
-    const nextStorage: MarketPredictionStorage = {
-      counts: {
-        ...current.counts,
-        [predictionTargetId]: {
-          ...currentCounts,
-          [direction]: currentCounts[direction] + 1,
-        },
-      },
-      votes: {
-        ...current.votes,
-        [predictionTargetId]: direction,
-      },
-    };
+    const timerId = window.setTimeout(() => {
+      setDirectionReaction(null);
+    }, 1100);
 
-    setMarketPredictionStorage(nextStorage);
-    setStorage(nextStorage);
+    return () => window.clearTimeout(timerId);
+  }, [directionReaction]);
+
+  function handleVote(direction: MarketDirection) {
+    setDirectionReaction(createDirectionReaction(direction));
   }
 
   async function handleAskAi() {
@@ -1007,6 +1024,7 @@ function MobileSummaryPage({
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-6 pt-4">
+      <DirectionReactionToast reaction={directionReaction} />
       <div className="mx-auto flex max-w-md flex-col gap-3">
         <header className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3">
@@ -1120,7 +1138,6 @@ function MobileSummaryPage({
           <div className="mt-4 grid grid-cols-2 gap-2">
             <Button
               className="h-11 rounded-xl border-red-100 bg-red-50 text-sm font-black text-red-500 hover:bg-red-100 disabled:bg-red-50 disabled:text-red-300"
-              disabled={Boolean(voteState.myVote)}
               onClick={() => handleVote("up")}
               type="button"
             >
@@ -1129,7 +1146,6 @@ function MobileSummaryPage({
             </Button>
             <Button
               className="h-11 rounded-xl border-blue-100 bg-blue-50 text-sm font-black text-blue-500 hover:bg-blue-100 disabled:bg-blue-50 disabled:text-blue-300"
-              disabled={Boolean(voteState.myVote)}
               onClick={() => handleVote("down")}
               type="button"
             >

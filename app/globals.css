@@ -175,6 +175,44 @@ body {
   display: none;
 }
 
+.directionReactionToast {
+  position: fixed;
+  left: 50%;
+  top: 22%;
+  z-index: 80;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  max-width: calc(100vw - 32px);
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: rgba(15, 23, 42, 0.92);
+  color: #ffffff;
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.22),
+    0 6px 18px rgba(15, 23, 42, 0.16);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: directionReactionPop 1.05s ease-out forwards;
+}
+
+.directionReactionToast.isUp {
+  box-shadow:
+    0 18px 40px rgba(239, 68, 68, 0.24),
+    0 6px 18px rgba(15, 23, 42, 0.16);
+}
+
+.directionReactionToast.isDown {
+  box-shadow:
+    0 18px 40px rgba(37, 99, 235, 0.24),
+    0 6px 18px rgba(15, 23, 42, 0.16);
+}
+
 @keyframes fireAuraPulse {
   0% {
     transform: scale(0.96) rotate(-2deg);
@@ -205,9 +243,32 @@ body {
   }
 }
 
+@keyframes directionReactionPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -12px) scale(0.82);
+  }
+
+  16% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.06);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -10px) scale(0.94);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .profileAvatarWrap.topRankFireAura::before,
-  .profileAvatarWrap.topRankFireAura::after {
+  .profileAvatarWrap.topRankFireAura::after,
+  .directionReactionToast {
     animation: none;
   }
 }
@@ -227,6 +288,13 @@ body {
 
   .communityPanelSlot .premium-card > .p-6 {
     padding: 16px;
+  }
+
+  .directionReactionToast {
+    top: 18%;
+    min-width: 0;
+    padding: 12px 16px;
+    font-size: 17px;
   }
 
   .communityPanelSlot .premium-card > .grid > div {
