@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { ArrowDown, ArrowRight, ArrowUp, Clock, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, Clock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -610,9 +610,6 @@ function ChartCommunityPanel({
   stock: StockAsset;
 }) {
   const [storage, setStorage] = useState<MarketPredictionStorage | null>(null);
-  const [aiOpinionStatus, setAiOpinionStatus] = useState<
-    "idle" | "loading" | "ready"
-  >("idle");
   const [mobileOpinionsExpanded, setMobileOpinionsExpanded] = useState(false);
   const [directionReaction, setDirectionReaction] = useState<DirectionReaction | null>(
     null,
@@ -649,14 +646,6 @@ function ChartCommunityPanel({
 
   function handleVote(direction: MarketDirection) {
     setDirectionReaction(createDirectionReaction(direction));
-  }
-
-  async function handleAskAi() {
-    setAiOpinionStatus("loading");
-
-    window.setTimeout(() => {
-      setAiOpinionStatus("ready");
-    }, 700);
   }
 
   return (
@@ -751,17 +740,8 @@ function ChartCommunityPanel({
             Giảm
           </Button>
         </div>
-
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <Button
-            className="h-10 w-full justify-center gap-2 rounded-lg bg-slate-950 text-sm font-bold text-white hover:bg-slate-800"
-            disabled={aiOpinionStatus === "loading"}
-            onClick={handleAskAi}
-            type="button"
-          >
-            <Sparkles className="h-4 w-4" aria-hidden="true" />
-            {aiOpinionStatus === "loading" ? "Đang chuẩn bị ý kiến AI" : "Yêu cầu ý kiến AI"}
-          </Button>
+        <div className="communityKakaoCta mt-5">
+          <KakaoStartButton className="communityKakaoButton" fullWidth locale="vi" />
         </div>
 
         <div className="mt-7 overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -999,9 +979,6 @@ function MobileSummaryPage({
 }) {
   const quote = useStockQuote(selectedStock);
   const [storage, setStorage] = useState<MarketPredictionStorage | null>(null);
-  const [aiOpinionStatus, setAiOpinionStatus] = useState<"idle" | "loading" | "ready">(
-    "idle",
-  );
   const [directionReaction, setDirectionReaction] = useState<DirectionReaction | null>(
     null,
   );
@@ -1043,14 +1020,6 @@ function MobileSummaryPage({
 
   function handleVote(direction: MarketDirection) {
     setDirectionReaction(createDirectionReaction(direction));
-  }
-
-  async function handleAskAi() {
-    setAiOpinionStatus("loading");
-
-    window.setTimeout(() => {
-      setAiOpinionStatus("ready");
-    }, 700);
   }
 
   return (
@@ -1197,16 +1166,9 @@ function MobileSummaryPage({
               Giảm
             </Button>
           </div>
-
-          <Button
-            className="mt-3 h-11 w-full justify-center gap-2 rounded-xl bg-slate-950 text-sm font-black text-white hover:bg-slate-800"
-            disabled={aiOpinionStatus === "loading"}
-            onClick={handleAskAi}
-            type="button"
-          >
-            <Sparkles className="h-4 w-4" aria-hidden="true" />
-            {aiOpinionStatus === "loading" ? "Đang chuẩn bị ý kiến AI" : "Yêu cầu ý kiến AI"}
-          </Button>
+          <div className="communityKakaoCta mt-3">
+            <KakaoStartButton className="communityKakaoButton" fullWidth locale="vi" />
+          </div>
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">

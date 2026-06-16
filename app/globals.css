@@ -108,6 +108,19 @@ body {
   background: rgba(25, 22, 0, 0.1);
 }
 
+.communityKakaoCta {
+  width: 100%;
+}
+
+.kakaoLoginButton.communityKakaoButton {
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 14px;
+  box-shadow:
+    0 10px 22px rgba(250, 204, 21, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
 .kakaoLoginToast {
   position: fixed;
   right: 24px;
