@@ -10,6 +10,7 @@ import {
   HOME_SELECTED_STOCK_KEY,
   HOME_STOCK_SELECT_EVENT,
 } from "@/components/home/asset-selector";
+import { KakaoStartButton } from "@/components/auth/kakao-start-button";
 import { UpbitStyleChartLayout } from "@/components/stocks/upbit-style-chart-layout";
 import { useStockQuote } from "@/components/stocks/use-stock-quote";
 import { Button } from "@/components/ui/button";
@@ -595,6 +596,7 @@ function DirectionReactionToast({ reaction }: { reaction: DirectionReaction | nu
     >
       <span className="directionReactionTitle">{reaction.title}</span>
       <span className="directionReactionDescription">{reaction.description}</span>
+      {/* TODO: Khi Kakao Sync sẵn sàng, mở rộng helper thành CTA đăng ký Kakao. */}
       <span className="directionReactionHelper">{reaction.helper}</span>
     </div>
   );
@@ -1065,6 +1067,7 @@ function MobileSummaryPage({
               {selectedStock.market}
             </span>
           </div>
+          <KakaoStartButton className="mt-3" compact fullWidth locale="vi" />
           <div className="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
             {assetOptions.map((option) => {
               const isSelected = option.stock.symbol === selectedStock.symbol;
@@ -1953,6 +1956,7 @@ export function StockChartCommunityHome() {
             Sau giờ đóng cửa, xem hướng đi của nhà đầu tư cá nhân.
           </p>
         </div>
+        <KakaoStartButton compact locale="vi" />
         <p className="inline-flex items-center gap-2 text-sm font-bold text-blue-500">
           <Clock className="h-4 w-4" aria-hidden="true" />
           Đến lúc đóng cửa
