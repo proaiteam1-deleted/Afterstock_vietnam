@@ -74,14 +74,27 @@ type ProfileRanking = {
 };
 
 type DirectionReaction = {
+  description: string;
   direction: MarketDirection;
+  helper: string;
   id: number;
-  message: string;
+  title: string;
 };
 
-const DIRECTION_REACTION_MESSAGES: Record<MarketDirection, string> = {
-  down: "📉 Giảm mạnh nào!",
-  up: "🚀 Tăng mạnh nào!",
+const DIRECTION_REACTION_MESSAGES: Record<
+  MarketDirection,
+  Omit<DirectionReaction, "direction" | "id">
+> = {
+  down: {
+    description: "📈 Hãy tham gia thêm ở các mã khác.",
+    helper: "Bạn cũng có thể để lại ý kiến ở các mã khác.",
+    title: "✅ Bình chọn đã được ghi nhận.",
+  },
+  up: {
+    description: "📈 Hãy tham gia thêm ở các mã khác.",
+    helper: "Bạn cũng có thể để lại ý kiến ở các mã khác.",
+    title: "✅ Bình chọn đã được ghi nhận.",
+  },
 };
 
 const HOT_STREAK_THRESHOLD = 5;
@@ -556,10 +569,12 @@ function PixelAvatar({
 }
 
 function createDirectionReaction(direction: MarketDirection): DirectionReaction {
+  const message = DIRECTION_REACTION_MESSAGES[direction];
+
   return {
+    ...message,
     direction,
     id: Date.now() + Math.random(),
-    message: DIRECTION_REACTION_MESSAGES[direction],
   };
 }
 
@@ -578,7 +593,9 @@ function DirectionReactionToast({ reaction }: { reaction: DirectionReaction | nu
       key={reaction.id}
       role="status"
     >
-      {reaction.message}
+      <span className="directionReactionTitle">{reaction.title}</span>
+      <span className="directionReactionDescription">{reaction.description}</span>
+      <span className="directionReactionHelper">{reaction.helper}</span>
     </div>
   );
 }
@@ -704,7 +721,11 @@ function ChartCommunityPanel({
 
         <div className="mt-5 grid grid-cols-2 gap-2">
           <Button
-            className="h-10 rounded-lg border-red-100 bg-red-50 text-sm font-bold text-red-500 hover:bg-red-100 disabled:bg-red-50 disabled:text-red-300"
+            className={cn(
+              "voteActionButton h-10 rounded-lg border-red-100 bg-red-50 text-sm font-bold text-red-500 hover:bg-red-100",
+              directionReaction?.direction === "up" && "isVoteActive isUp",
+            )}
+            key={directionReaction?.direction === "up" ? `up-${directionReaction.id}` : "up"}
             onClick={() => handleVote("up")}
             type="button"
           >
@@ -712,7 +733,15 @@ function ChartCommunityPanel({
             Tăng
           </Button>
           <Button
-            className="h-10 rounded-lg border-blue-100 bg-blue-50 text-sm font-bold text-blue-500 hover:bg-blue-100 disabled:bg-blue-50 disabled:text-blue-300"
+            className={cn(
+              "voteActionButton h-10 rounded-lg border-blue-100 bg-blue-50 text-sm font-bold text-blue-500 hover:bg-blue-100",
+              directionReaction?.direction === "down" && "isVoteActive isDown",
+            )}
+            key={
+              directionReaction?.direction === "down"
+                ? `down-${directionReaction.id}`
+                : "down"
+            }
             onClick={() => handleVote("down")}
             type="button"
           >
@@ -1137,7 +1166,11 @@ function MobileSummaryPage({
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             <Button
-              className="h-11 rounded-xl border-red-100 bg-red-50 text-sm font-black text-red-500 hover:bg-red-100 disabled:bg-red-50 disabled:text-red-300"
+              className={cn(
+                "voteActionButton h-11 rounded-xl border-red-100 bg-red-50 text-sm font-black text-red-500 hover:bg-red-100",
+                directionReaction?.direction === "up" && "isVoteActive isUp",
+              )}
+              key={directionReaction?.direction === "up" ? `up-${directionReaction.id}` : "up"}
               onClick={() => handleVote("up")}
               type="button"
             >
@@ -1145,7 +1178,15 @@ function MobileSummaryPage({
               Tăng
             </Button>
             <Button
-              className="h-11 rounded-xl border-blue-100 bg-blue-50 text-sm font-black text-blue-500 hover:bg-blue-100 disabled:bg-blue-50 disabled:text-blue-300"
+              className={cn(
+                "voteActionButton h-11 rounded-xl border-blue-100 bg-blue-50 text-sm font-black text-blue-500 hover:bg-blue-100",
+                directionReaction?.direction === "down" && "isVoteActive isDown",
+              )}
+              key={
+                directionReaction?.direction === "down"
+                  ? `down-${directionReaction.id}`
+                  : "down"
+              }
               onClick={() => handleVote("down")}
               type="button"
             >
