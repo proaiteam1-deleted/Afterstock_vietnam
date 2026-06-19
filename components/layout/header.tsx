@@ -74,6 +74,9 @@ export function Header() {
   const router = useRouter();
   const [activeSymbol, setActiveSymbol] = useState(DEFAULT_HOME_STOCK_SYMBOL);
   const [query, setQuery] = useState("");
+  const routePrefix = pathname.startsWith("/vn") ? "/vn" : "";
+  const homePath = routePrefix || "/";
+  const todaySentimentPath = `${homePath}#today-sentiment`;
   const availableTabs = useMemo(
     () =>
       stockTabs.filter((tab) =>
@@ -107,8 +110,8 @@ export function Header() {
     writeActiveStockSymbol(symbol);
     setActiveSymbol(symbol);
 
-    if (pathname !== "/") {
-      router.push("/");
+    if (pathname !== homePath) {
+      router.push(homePath);
     }
   }
 
@@ -130,7 +133,7 @@ export function Header() {
         <div className="flex min-w-0 items-center gap-5">
           <button
             className="shrink-0 text-xl font-black tracking-normal text-slate-950"
-            onClick={() => router.push("/")}
+            onClick={() => router.push(homePath)}
             type="button"
           >
             AfterStock
@@ -203,7 +206,7 @@ export function Header() {
 
           <Button
             className="h-10 shrink-0 rounded-lg bg-blue-500 px-4 text-sm font-bold text-white hover:bg-blue-600"
-            onClick={() => router.push("/#today-sentiment")}
+            onClick={() => router.push(todaySentimentPath)}
             type="button"
           >
             Tâm lý hôm nay

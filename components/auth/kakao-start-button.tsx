@@ -53,7 +53,9 @@ function getKakaoRedirectUri() {
     return "/auth/kakao/callback";
   }
 
-  return `${window.location.origin}/auth/kakao/callback`;
+  const routePrefix = window.location.pathname.startsWith("/vn") ? "/vn" : "";
+
+  return `${window.location.origin}${routePrefix}/auth/kakao/callback`;
 }
 
 function loadKakaoSdk() {

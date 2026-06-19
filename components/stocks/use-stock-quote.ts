@@ -10,6 +10,14 @@ import type { StockAsset } from "@/types/stock";
 export type DisplayStockQuote = MockStockQuote &
   Partial<Pick<LiveStockQuote, "isLive" | "sourceLabel" | "updatedAt">>;
 
+function getRequestPrefix() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return window.location.pathname.startsWith("/vn") ? "/vn" : "";
+}
+
 export function useStockQuote(stock: StockAsset): DisplayStockQuote {
   const fallbackQuote = useMemo(() => getMockStockQuote(stock), [stock]);
   const [quoteState, setQuoteState] = useState<{
@@ -27,7 +35,7 @@ export function useStockQuote(stock: StockAsset): DisplayStockQuote {
 
       try {
         const response = await fetch(
-          `/api/stock-quotes/${encodeURIComponent(stock.symbol)}`,
+          `${getRequestPrefix()}/api/stock-quotes/${encodeURIComponent(stock.symbol)}`,
           {
             cache: "no-store",
             signal: abortController.signal,
