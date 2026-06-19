@@ -109,6 +109,7 @@ body {
 }
 
 .communityKakaoCta {
+  display: none;
   width: 100%;
 }
 
