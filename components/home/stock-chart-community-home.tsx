@@ -754,11 +754,11 @@ function ChartCommunityPanel({
             </p>
           </div>
 
-          <div className="relative border-b border-slate-100 px-4 pb-4 pt-8">
-            <div className="absolute left-4 top-4 flex w-[calc(100%-2rem)] justify-around">
-              {["Nghiêng Tăng", "Cẩn thận quá nóng", "Quan sát"].map((label) => (
+          <div className="relative border-b border-slate-100 px-4 pb-4 pt-12">
+            <div className="absolute left-3 right-3 top-3 grid grid-cols-3 gap-1">
+              {["Nghiêng tăng", "Quá nóng", "Quan sát"].map((label) => (
                 <span
-                  className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600 shadow-sm"
+                  className="flex min-h-8 items-center justify-center rounded-md border border-slate-200 bg-white px-1.5 py-1 text-center text-[10px] font-bold leading-tight text-slate-600 shadow-sm"
                   key={label}
                 >
                   {label}
